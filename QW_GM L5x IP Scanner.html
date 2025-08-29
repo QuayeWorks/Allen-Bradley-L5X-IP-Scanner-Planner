@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Allen‑Bradley L5X IP Scanner</title>
+  <style>
+    :root { --bg:#0b1020; --card:#121836; --muted:#8fa0c7; --text:#e7ecf7; --accent:#6ab0ff; --accent2:#58e0a7; --warn:#ffb86b; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; color:var(--text); background: radial-gradient(1200px 600px at 10% -10%, #1a2555, #0b1020 60%); }
+    header { position:sticky; top:0; z-index:10; background:linear-gradient(180deg, rgba(11,16,32,.95), rgba(11,16,32,.6)); backdrop-filter: blur(6px); border-bottom:1px solid #1e2a55; }
+    .wrap { max-width:1200px; margin:0 auto; padding:16px 20px; }
+    h1 { margin:0; font-size:20px; letter-spacing:.3px; }
+    main { display:grid; grid-template-columns: 260px 1fr; gap:16px; max-width:1200px; margin:16px auto; padding:0 20px 40px; }
+    .card { background:var(--card); border:1px solid #1e2a55; border-radius:16px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+    .card h2 { margin:0 0 8px; font-size:16px; color:#2a80ff; }
+    .card .body { padding:16px; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    input[type="file"] { display:none; }
+    .btn { cursor:pointer; border:1px solid #2a3972; background:#16214a; color:var(--text); padding:10px 14px; border-radius:12px; font-weight:600; transition:.15s transform, .15s opacity, .15s background; }
+    .btn:hover { transform: translateY(-1px); background:#1a2757; }
+    .btn:active { transform: translateY(0); opacity:.85; }
+    .btn.primary { background:linear-gradient(180deg, #1e3c78, #162a57); border-color:#2d4c93; }
+    .btn.accent { background:linear-gradient(180deg, #1b684a, #124a34); border-color:#1e7a56; }
+    .btn.warn { background:linear-gradient(180deg, #7a501e, #563712); border-color:#9a6a2c; }
+    select, input[type="text"], input[type="number"] { background:#0f1633; color:var(--text); border:1px solid #26366f; border-radius:12px; padding:10px 12px; outline:none; min-height:40px; }
+    .muted { color:var(--muted); font-size:12px; }
+    .grid { display:grid; gap:12px; }
+    .groups { padding:10px; display:flex; flex-direction:column; gap:8px; }
+    .group-item { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; border:1px solid #243266; border-radius:12px; cursor:pointer; background:#0f1733; }
+    .group-item.active { border-color:#2f7bd6; background:linear-gradient(180deg, #0f1a3f, #0c1230); box-shadow: inset 0 0 0 1px rgba(104, 171, 255, .35); }
+    .kpi { display:flex; gap:16px; flex-wrap:wrap; }
+    .kpi .pill {  background:linear-gradient(180deg, #2a80ff, #0166ff) !important; border:1px solid #27366c; border-radius:999px; padding:8px 12px; font-size:12px; }
+    table { width:100%; border-collapse:separate; border-spacing:0 8px; }
+    th { text-align:left; font-size:12px; color:#c7d9ff; padding:0 10px; }
+    td { background:#0f1733; border:1px solid #243266; padding:10px 12px; border-radius:10px; vertical-align:top; }
+    td.name { font-weight:700; }
+    .list { max-height:360px; overflow:auto; padding-right:4px; }
+    .flex { display:flex; align-items:center; gap:8px; }
+    .right { margin-left:auto; }
+    .spacer { height:8px; }
+    .footer { padding:16px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid #1e2a55; }
+    .badge { font-size:11px; background:#0e1530; border:1px solid #2a3a76; padding:4px 8px; border-radius:999px; color:#243266; }
+    .hint { font-size:12px; color:#243266; }
+    .checkbox { display:flex; align-items:center; gap:6px; font-size:12px; color:#2a80ff; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .small { font-size:12px; }
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+	/* === GM Blue & White Overrides + Toast === */
+	:root {
+		--bg:linear-gradient(180deg, #2a80ff, #fff) !important; /* GM Blue */
+		--card:#ffffff; /* White cards */
+		--muted:#243266;
+		--text:#002d72;
+		--accent:#007aff;
+		--accent2:#58e0a7;
+		--warn:#ff8c42;
+	}
+	body{
+	  margin:0; font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial;
+	  background: var(--text);
+	  color:#fff; /* Blue background => white text */
+	}
+	header{
+	  background: linear-gradient(180deg, rgba(1,102,255,.95), rgba(1,102,255,.85)) !important;
+	  border-bottom:1px solid rgba(255,255,255,.25) !important;
+	}
+	.card{ background: var(--card) !important; border-color:#dbe6ff !important; box-shadow: 0 6px 18px rgba(0,0,0,.06) !important; }
+	.group-item{ background:#ffffff !important; border-color:#d7e2ff !important; }
+	.group-item.active{ border-color:#0166ff !important; background:linear-gradient(180deg,#f0f7ff,#ffffff) !important; box-shadow: inset 0 0 0 1px rgba(1,102,255,.25) !important; }
+	select, input[type="text"], input[type="number"]{ background:#ffffff !important; color:var(--text) !important; border-color:#c8d8ff !important; }
+	.btn{ border-color:#c3d5ff !important; background:#eaf1ff !important; color:#0b1a3a !important; }
+	.btn.primary{ background:linear-gradient(180deg, #2a80ff, #0166ff) !important; border-color:#2a80ff !important; color:#fff !important; }
+	th{ color:#2d488a !important; }
+	td{ background:#ffffff !important; border-color:#d7e2ff !important; color:var(--text) !important; }
+	.badge{ background:#eaf1ff !important; border-color:#cfe0ff !important; color:#0b1a3a !important; }
+
+	/* Toast */
+	.toast{
+	  position:fixed; bottom:20px; left:50%;
+	  transform:translateX(-50%) translateY(20px);
+	  background:var(--gmblue); color:#fff;
+	  padding:12px 16px; border-radius:12px;
+	  box-shadow:0 8px 24px rgba(0,0,0,.2);
+	  opacity:0; pointer-events:none;
+	  transition:opacity .2s, transform .2s; font-weight:600;
+	}
+	.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+	/* Logo */
+	.gm-logo{ flex:0 0 auto; }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap row">
+	  <div class="row" style="gap:10px;align-items:center;">
+		<!-- Simple inline GM-like logo -->
+		<img class="gm-logo"
+			 src="https://peoplefinder.gm.com/images/org/GM_Outlined_OneColor_Brandmark_White_RGB.png"
+			 alt="GM Logo" width="34" height="34" />
+		<h1>Allen-Bradley L5X IP Scanner & Planner</h1>
+		<span class="badge" title="Partnership">Partnered with Quaye Works</span>
+	  </div>
+
+      <div class="right row">
+        <label class="btn" for="fileInput">📄 Load L5X / XML</label>
+        <input id="fileInput" type="file" accept=".l5x,.xml,.L5X,.XML" />
+        <button id="downloadCsv" class="btn">⬇️ Export CSV</button>
+        <button id="printBtn" class="btn">🖨️ Print</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <aside class="card">
+      <div class="body">
+        <h2>IP Groups (by 1st octet)</h2>
+        <div id="groups" class="groups" role="listbox" aria-label="IP Groups"></div>
+        <div class="spacer"></div>
+        <div class="grid">
+          <div class="kpi">
+            <span class="pill" id="kpiTotal">IPs: 0</span>
+            <span class="pill" id="kpiDevices">Devices: 0</span>
+            <span class="pill" id="kpiSubnets">/24 Subnets: 0</span>
+          </div>
+          <div class="hint">Tip: Click a group to view used and available IPs. Groups are created from IPs discovered in your L5X file.</div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="card" aria-live="polite">
+      <div class="body">
+        <div class="row" style="justify-content:space-between;align-items:flex-end;gap:12px;">
+          <div style="flex:1 1 auto">
+            <h2 id="panelTitle">Select a group to view details</h2>
+            <div class="row" style="margin-top:8px;">
+              <div class="grid" style="min-width:240px">
+                <label class="small" for="subnetPicker">Observed /24 Subnet</label>
+                <select id="subnetPicker" disabled></select>
+              </div>
+              <div class="grid" style="min-width:260px;flex:1 1 auto;">
+                <label class="small" for="customCidr">Or enter custom CIDR (e.g. 192.168.1.0/24)</label>
+                <input id="customCidr" type="text" placeholder="x.x.x.x/nn" />
+              </div>
+              <button id="applyCidr" class="btn primary">Apply</button>
+            </div>
+          </div>
+          <div class="grid" style="min-width:220px;">
+            <label class="small">Filters</label>
+            <div class="row">
+              <label class="checkbox"><input id="excludeReserved" type="checkbox" checked/> Exclude .0 and .255</label>
+              <label class="checkbox"><input id="excludeGateway" type="checkbox"/> Exclude likely gateway (.1)</label>
+              <label class="checkbox"><input id="excludeUsed" type="checkbox" checked/> Exclude used</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:16px; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="card">
+            <div class="body">
+              <h2>Used IPs in Selection</h2>
+              <div class="list">
+                <table id="usedTable">
+                  <thead>
+                    <tr><th>IP</th><th>Device / Module</th><th>Context</th></tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="body">
+              <div class="row" style="justify-content:space-between;align-items:center;">
+                <h2>Available IPs</h2>
+                <span class="badge" id="availCount">0</span>
+              </div>
+              <div class="list">
+                <table id="availTable">
+                  <thead>
+                    <tr><th>IP</th><th class="small">Notes</th></tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer">
+        <span class="muted">Parsed <span id="fileName">—</span></span>
+        <span class="muted">Partnered with QuayeWorks• © 2025</span>
+      </div>
+    </section>
+  </main>
+
+  <template id="groupItemTpl">
+    <div class="group-item" role="option"><span class="mono"></span><span class="badge"></span></div>
+  </template>
+
+  <script>
+    // --- Utilities ---
+    const ipRegex = /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3})\b/g;
+    const by = fn => (a,b) => fn(a) < fn(b) ? -1 : fn(a) > fn(b) ? 1 : 0;
+
+    function ipToNum(ip){ return ip.split('.').reduce((a,o)=> (a<<8) + (+o), 0>>>0); }
+    function numToIp(n){ return [24,16,8,0].map(shift => (n>>>shift)&255).join('.'); }
+
+    function parseCIDR(cidr){
+      const m = /^(\d{1,3}(?:\.\d{1,3}){3})\/(\d{1,2})$/.exec(cidr.trim());
+      if(!m) throw new Error('CIDR must look like 192.168.1.0/24');
+      const [ip, maskBitsStr] = [m[1], m[2]]; const maskBits = +maskBitsStr;
+      const oct = ip.split('.').map(Number);
+      if(oct.some(o=>o<0||o>255) || maskBits<0 || maskBits>32) throw new Error('Invalid CIDR');
+      const base = ipToNum(ip) & (maskBits===0?0:(0xFFFFFFFF << (32-maskBits))>>>0);
+      const size = maskBits===32 ? 1 : Math.pow(2, 32-maskBits);
+      return {base, size, maskBits};
+    }
+
+    function hostsInCIDR(cidr){
+      const {base, size, maskBits} = parseCIDR(cidr);
+      // Limit to max 8192 hosts to protect the UI
+      if(size > 8192) throw new Error('CIDR is too large (max ~8192 addresses). Refine your range.');
+      const ips = [];
+      for(let i=0;i<size;i++) ips.push(numToIp((base + i)>>>0));
+      return {ips, maskBits};
+    }
+
+    function parentModuleName(node){
+      // Walk up ancestors to find a Module/Tag with a Name/Label attribute
+      let cur = node; let depth = 0;
+      while(cur && depth < 6){
+        if(cur.getAttribute){
+          const n = cur.getAttribute('Name') || cur.getAttribute('Module') || cur.getAttribute('Label') || cur.getAttribute('CatalogNumber');
+          if(n) return n;
+        }
+        cur = cur.parentNode; depth++;
+      }
+      return '(unknown)';
+    }
+
+    function contextPath(node){
+      const parts = [];
+      let cur = node; let steps=0;
+      while(cur && steps<4){
+        if(cur.nodeType===1){
+          const tag = cur.tagName;
+          const name = cur.getAttribute && (cur.getAttribute('Name')||cur.getAttribute('Module')||cur.getAttribute('Label'));
+          parts.push(name? `${tag}(${name})` : tag);
+        }
+        cur = cur.parentNode; steps++;
+      }
+      return parts.reverse().join(' > ');
+    }
+
+    function uniq(arr){ return [...new Set(arr)]; }
+
+    // --- State ---
+    const state = {
+      fileName: '',
+      ips: [], // {ip, device, context}
+      groups: new Map(), // firstOctet -> { ips:[...], subnets:Set("a.b.c") }
+      selection: { firstOctet: null, subnet: null, cidr: null }
+    };
+
+    // --- DOM ---
+    const el = (id)=>document.getElementById(id);
+    const groupsEl = el('groups');
+    const fileNameEl = el('fileName');
+    const kpiTotal = el('kpiTotal');
+    const kpiDevices = el('kpiDevices');
+    const kpiSubnets = el('kpiSubnets');
+    const panelTitle = el('panelTitle');
+    const subnetPicker = el('subnetPicker');
+    const customCidr = el('customCidr');
+    const applyCidr = el('applyCidr');
+    const usedTableBody = document.querySelector('#usedTable tbody');
+    const availTableBody = document.querySelector('#availTable tbody');
+    const availCount = el('availCount');
+
+    // Filters
+    const excludeReserved = el('excludeReserved');
+    const excludeGateway = el('excludeGateway');
+    const excludeUsed = el('excludeUsed');
+
+    // --- File load ---
+    el('fileInput').addEventListener('change', async (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      state.fileName = file.name; fileNameEl.textContent = file.name;
+      const text = await file.text();
+      parseL5X(text);
+      renderGroups();
+      clearTables();
+    });
+
+    // --- Parsing ---
+    function parseL5X(xmlText){
+      state.ips = []; state.groups.clear();
+      let doc;
+      try { doc = new DOMParser().parseFromString(xmlText, 'text/xml'); }
+      catch(err){ alert('Failed to parse XML: '+ err.message); return; }
+
+      // Scan text nodes & attributes for IPv4 patterns
+      const walker = doc.createTreeWalker(doc, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null);
+      let node; const matches = [];
+      while((node = walker.nextNode())){
+        if(node.nodeType === Node.TEXT_NODE){
+          const text = node.textContent || '';
+          const ips = text.match(ipRegex); if(ips) ips.forEach(ip=> matches.push({ip, node}));
+        } else if(node.nodeType === Node.ELEMENT_NODE){
+          if(node.attributes){
+            for(const attr of node.attributes){
+              const ips = String(attr.value).match(ipRegex);
+              if(ips) ips.forEach(ip=> matches.push({ip, node}));
+            }
+          }
+        }
+      }
+
+      // Build entries
+      for(const m of matches){
+        const firstOctet = m.ip.split('.')[0];
+        const dev = parentModuleName(m.node);
+        const ctx = contextPath(m.node);
+        state.ips.push({ ip: m.ip, device: dev, context: ctx });
+        const subnet = m.ip.split('.').slice(0,3).join('.');
+        if(!state.groups.has(firstOctet)) state.groups.set(firstOctet, { ips: [], subnets: new Set() });
+        const g = state.groups.get(firstOctet);
+        g.ips.push({ ip:m.ip, device:dev, context:ctx, subnet });
+        g.subnets.add(subnet);
+      }
+
+      // KPIs
+      const uniqueIps = uniq(state.ips.map(x=>x.ip));
+      const deviceCount = uniq(state.ips.map(x=>x.device)).length;
+      const subnetCount = uniq(state.ips.map(x=> x.ip.split('.').slice(0,3).join('.'))).length;
+      kpiTotal.textContent = `IPs: ${uniqueIps.length}`;
+      kpiDevices.textContent = `Devices: ${deviceCount}`;
+      kpiSubnets.textContent = `/24 Subnets: ${subnetCount}`;
+	  showToast(`Parsed ${state.fileName||'file'}: ${uniqueIps.length} IPs • ${deviceCount} devices • ${subnetCount} subnets`);
+
+    }
+
+    function renderGroups(){
+      groupsEl.innerHTML = '';
+      const entries = [...state.groups.entries()].sort((a,b)=> +a[0] - +b[0]);
+      if(entries.length===0){
+        groupsEl.innerHTML = '<div class="muted">No IPs found yet. Load your L5X/XML above.</div>';
+        return;
+      }
+      for(const [oct, data] of entries){
+        const tpl = document.getElementById('groupItemTpl');
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        node.querySelector('.mono').textContent = `${oct}.x.x.x`;
+        node.querySelector('.badge').textContent = `${uniq(data.ips.map(x=>x.ip)).length} IPs`;
+        node.addEventListener('click', ()=> selectGroup(oct));
+        groupsEl.appendChild(node);
+      }
+    }
+
+    function selectGroup(firstOctet){
+      // Toggle UI
+      [...groupsEl.children].forEach(ch=> ch.classList.toggle('active', ch.querySelector('.mono').textContent.startsWith(firstOctet+'.')));
+      state.selection.firstOctet = firstOctet;
+      state.selection.subnet = null; state.selection.cidr = null;
+      panelTitle.textContent = `Group ${firstOctet}.x.x.x`;
+      // populate subnets
+      const g = state.groups.get(firstOctet);
+      const subnets = [...g.subnets].sort();
+      subnetPicker.innerHTML = subnets.map(s=> `<option value="${s}">${s}.0/24</option>`).join('');
+      subnetPicker.disabled = subnets.length===0;
+      if(subnets.length>0){ subnetPicker.selectedIndex = 0; state.selection.subnet = subnets[0]; }
+      buildTables();
+    }
+
+    // --- Tables ---
+    function clearTables(){ usedTableBody.innerHTML = ''; availTableBody.innerHTML = ''; availCount.textContent='0'; }
+
+    function buildTables(){
+      clearTables();
+      const group = state.groups.get(state.selection.firstOctet);
+      if(!group) return;
+
+      // Used table rows limited to current selection (either observed /24 or custom CIDR)
+      let used = group.ips;
+      let allCandidates = [];
+      let selectionLabel = '';
+
+      try {
+        if(state.selection.cidr){
+          const {ips} = hostsInCIDR(state.selection.cidr);
+          allCandidates = ips;
+          selectionLabel = state.selection.cidr;
+        } else if(state.selection.subnet){
+          // Build full /24
+          const base = state.selection.subnet + '.0/24';
+          const {ips} = hostsInCIDR(base);
+          allCandidates = ips;
+          selectionLabel = base;
+        }
+      } catch(err){
+        alert(err.message);
+        return;
+      }
+
+      // Filter used to only those within candidates
+      const candidateSet = new Set(allCandidates);
+      used = used.filter(u => candidateSet.has(u.ip));
+
+      // Render used
+      const usedSorted = uniq(used.map(x=>x.ip)).sort(by(ipToNum)).map(ip => {
+        const rows = used.filter(x=>x.ip===ip);
+        const names = uniq(rows.map(x=>x.device));
+        const ctxs = uniq(rows.map(x=>x.context));
+        return { ip, device: names.join(' | '), context: ctxs[0]||'' };
+      });
+
+      for(const row of usedSorted){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="mono">${row.ip}</td><td class="name">${escapeHtml(row.device)}</td><td class="small">${escapeHtml(row.context)}</td>`;
+        usedTableBody.appendChild(tr);
+      }
+
+      // Available list = candidates - filters - used
+      let avail = allCandidates.slice();
+      if(excludeReserved.checked){ avail = avail.filter(ip=> !(ip.endsWith('.0') || ip.endsWith('.255'))); }
+      if(excludeGateway.checked){ avail = avail.filter(ip=> !ip.endsWith('.1')); }
+      if(excludeUsed.checked){ const usedSet = new Set(usedSorted.map(x=>x.ip)); avail = avail.filter(ip=> !usedSet.has(ip)); }
+
+      avail = avail.sort(by(ipToNum));
+      availCount.textContent = avail.length.toString();
+
+      for(const ip of avail){
+        const tr = document.createElement('tr');
+        const note = candidateSet.has(ip) ? '' : 'outside selection';
+        tr.innerHTML = `<td class="mono">${ip}</td><td class="small">${note}</td>`;
+        availTableBody.appendChild(tr);
+      }
+
+      // Update headline
+      if(selectionLabel) panelTitle.textContent = `Group ${state.selection.firstOctet}.x.x.x — ${selectionLabel}`;
+    }
+
+    subnetPicker.addEventListener('change', ()=>{
+      state.selection.subnet = subnetPicker.value; state.selection.cidr = null; customCidr.value = ''; buildTables();
+    });
+
+    applyCidr.addEventListener('click', ()=>{
+      const cidr = customCidr.value.trim(); if(!cidr) return;
+      try{ parseCIDR(cidr); } catch(err){ alert(err.message); return; }
+      state.selection.cidr = cidr; state.selection.subnet = null; buildTables();
+    });
+
+    // Filters change => rebuild
+    [excludeReserved, excludeGateway, excludeUsed].forEach(ch=> ch.addEventListener('change', buildTables));
+
+    // --- CSV / Print ---
+    el('downloadCsv').addEventListener('click', ()=>{
+      const rows = [['IP','Status','Device','Context']];
+      const usedRows = [...document.querySelectorAll('#usedTable tbody tr')].map(tr=>[
+        tr.children[0].innerText, 'Used', tr.children[1].innerText, tr.children[2].innerText
+      ]);
+      const availRows = [...document.querySelectorAll('#availTable tbody tr')].map(tr=>[
+        tr.children[0].innerText, 'Available', '', ''
+      ]);
+      rows.push(...usedRows, ...availRows);
+      const csv = rows.map(r=> r.map(v=> '"'+String(v).replaceAll('"','""')+'"').join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download=(state.fileName||'ips')+'-plan.csv'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    el('printBtn').addEventListener('click', ()=> window.print());
+
+    // --- Helpers ---
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c])); }
+	
+	function showToast(msg){
+	  const t = document.getElementById('toast'); if(!t) return;
+	  t.textContent = msg;
+	  t.classList.add('show');
+	  clearTimeout(showToast._timer);
+	  showToast._timer = setTimeout(()=> t.classList.remove('show'), 4000);
+	}
+
+  </script>
+</body>
+	<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+</html>
