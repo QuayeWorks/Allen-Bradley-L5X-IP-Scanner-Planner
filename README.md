@@ -7,7 +7,7 @@ Built as a **single HTML file** — no server, no dependencies, all processing i
 
 ---
 
-## ✨ Features
+##  Features
 - **L5X/XML Parser** – Reads and parses your Allen-Bradley project files directly in the browser.
 - **IP Discovery** – Extracts all IPv4 addresses and links them to module/device names with context.
 - **Subnet Grouping** – Automatically groups IPs by first octet (e.g., 10.x.x.x, 192.x.x.x).
@@ -19,7 +19,7 @@ Built as a **single HTML file** — no server, no dependencies, all processing i
 
 ---
 
-## 🚀 Usage
+##  Usage
 1. Download or clone this repo.
 2. Open `index.html` (the provided HTML file) in any modern browser (Chrome, Edge, Firefox).
 3. Click **Load L5X / XML** and select your file.
@@ -29,26 +29,13 @@ Built as a **single HTML file** — no server, no dependencies, all processing i
    - **Available IPs** generated dynamically with filters.
 5. Export to CSV or print your available IP plan.
 
----
 
-## 📷 Screenshots
-> _(Add a screenshot of the tool UI here)_
 
----
-
-## 🛠️ Tech Stack
-- **Pure HTML5 + CSS3 + JavaScript**
-- No external libraries
-- 100% client-side (safe for local/offline use)
-
----
-
-## 📜 License
+## License
 MIT License — free to use, modify, and share.
 
 ---
 
-## 🤝 Credits
-- **General Motors** – Official brand colors & logo styling.  
+##  Credits
 - **Quaye Works** – Development & distribution partner.  
 - © 2025 Quaye Works
